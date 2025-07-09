@@ -1,61 +1,41 @@
 # 🔥 Classic Spark vs Spark Connect
 
-## 🔥 1. Apache Spark
+## Classic Spark (aka In-Process Spark Session)
+- `Architecture`: Your code runs inside the Spark driver process on the cluster.
+- `API Access`: Full access to Spark internals—spark.conf.set(...), SparkContext, dbutils, pandas_udf, Arrow optimization, MLlib, RDDs.
+- `Use Case`: Ideal for ETL, machine learning, and production workloads, or when you need to tune configs or access low-level Spark features.
+- `Within Databricks`: Requires a classic (interactive) cluster, not a SQL Warehouse or Spark Connect-enabled cluster.
 
-Apache Spark is the core engine — an open-source, distributed computing system.
+## Spark Connect (client–server model)
+- `Architecture`: Your Python code acts as a remote client, sending logical plans via gRPC to the Spark driver/server, which executes them.
+    - The client does not run inside the driver (no Py4J). 
 
-- Written in **Scala** (JVM-based)
-- Executes jobs in parallel across a cluster
-- Supports multi-language APIs: **Scala**, **Java**, **Python**, **R**
-- Used for **big data processing**, **ETL**, **ML**, **graph processing**, and **streaming**
+- `Limitations`:
+    - Cannot run spark.conf.set(...), as settings are driver-side only.
+    - No access to SparkContext or internals (RDDs).
+    - Some UDFs, dbutils, and streaming/wide transforms are not supported.
 
-📌 When someone says “Apache Spark”, they mean the **underlying technology** that everything else builds on.
+- `Benefits`:
+    - Lightweight client, no JVM on client machine. 
+    - Multi-tenant use: Shared Spark server can serve many clients efficiently. 
+    - Easier to integrate with IDEs (like VS Code, Jupyter), remote debugging. 
 
----
 
-## 🐍 2. PySpark
+## 🔄 Compatibility and Evolution
+- Spark 4.0 has significantly closed the feature gap, bringing Spark Connect closer to Classic Spark in functionality and API parity. 
+    - However, driver-scoped configuration (like spark.conf.set(...)) remains unsupported in Connect.
 
-**PySpark** is the official **Python API** for Apache Spark.
 
-Lets you use Python to:
+| Feature                   |   Classic Spark   |     Spark Connect     |
+| ------------------------- | :---------------: | :-------------------: |
+| `spark.conf.set(...)`     |      ✅ Works      |        ❌ Fails        |
+| Arrow / `toPandas()`      | ✅ Fully supported |       ⚠️ Limited      |
+| `pandas_udf`, MLlib, RDDs |       ✅ Yes       | ⚠️ Partial/no support |
+| Ideal for dev, ETL, ML    |       ✅ Yes       |       ⚠️ Limited      |
+| Lightweight IDE usage     |      ⚠️ Heavy     |      ✅ Efficient      |
 
-- Load data (e.g., CSV, Delta, Parquet)
-- Write transformations and queries
-- Train ML models (with Spark MLlib or Pandas APIs on Spark)
 
-Internally, it translates Python code to JVM bytecode using **Py4J** or **Spark Connect**.
+## ✅ Conclusion
+- Use Classic Spark for full control, advanced configurations, and heavy workloads.
+- Use Spark Connect for lightweight development, remote debugging, and shared multi-user environments—but know its limitations.
 
-🔧 You write Python code, but it’s **executed by the Spark engine**, often running in the JVM on a cluster.
-
----
-
-## 🧱 3. Databricks Spark (aka Databricks Runtime)
-
-**Databricks Spark = Apache Spark + Databricks Runtime Enhancements**
-
-This is what runs inside Databricks notebooks.
-
-Based on open-source Apache Spark, it includes:
-
-- Optimizations for **Delta Lake**
-- Enhanced **Spark SQL** performance
-- **MLflow** integration
-- **Auto-scaling**, **serverless** options
-- Better support for **pandas**, **Arrow**, and **GPU** workloads
-
-## 🧠 In Simple Terms
-
-| Term                 | What It Is                              | Language    | Where It Runs                    |
-| -------------------- | --------------------------------------- | ----------- | -------------------------------- |
-| **Apache Spark**     | Core distributed compute engine         | Scala (JVM) | Open-source / Cloud / Databricks |
-| **PySpark**          | Python API for Spark                    | Python      | Runs on Spark via JVM or Connect |
-| **Databricks Spark** | Apache Spark + Databricks optimizations | Multi-lang  | On Databricks clusters (managed) |
-
-## 💡 How This Affects You in Databricks
-- When you're using a notebook in Databricks:
-    - You’re writing PySpark (Python code using the `spark` object)
-    - That code is executed by Apache Spark
-    - It’s all managed by the Databricks platform, which gives you enhanced features like:
-        - Delta Lake
-        - SQL Warehouses
-        - Auto-scaling clusters
