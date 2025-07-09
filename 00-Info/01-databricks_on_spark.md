@@ -53,7 +53,7 @@ Based on open-source Apache Spark, it includes:
 
 ## 💡 How This Affects You in Databricks
 - When you're using a notebook in Databricks:
-    - You’re writing PySpark (Python code using the spark object)
+    - You’re writing PySpark (Python code using the `spark` object)
     - That code is executed by Apache Spark
     - It’s all managed by the Databricks platform, which gives you enhanced features like:
         - Delta Lake
